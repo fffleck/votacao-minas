@@ -106,24 +106,24 @@ export default function ManageVotingPage() {
 
   return (
     <RequireAuth>
-      <div className="min-h-screen bg-zinc-50 dark:bg-neutral-900 py-10 px-2">
-        <div className="max-w-2xl mx-auto">
-          <h1 className="text-3xl font-bold tracking-tight text-zinc-800 dark:text-zinc-100 mb-8">
+      <div className="min-h-screen bg-zinc-50 dark:bg-neutral-900 py-10 px-4">
+        <div className="max-w-4xl mx-auto">
+          <h1 className="text-2xl sm:text-3xl font-bold tracking-tight text-zinc-800 dark:text-zinc-100 mb-8">
             Gerenciar Etapas e Opções
           </h1>
 
           {/* Adicionar etapa */}
           <div className="bg-white dark:bg-zinc-800 border border-zinc-200 dark:border-zinc-700 rounded-xl shadow-md p-6 mb-6">
             <h2 className="font-semibold mb-4 text-zinc-800 dark:text-zinc-100">Adicionar nova etapa</h2>
-            <div className="flex flex-col gap-3 md:flex-row md:items-end">
+            <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-[minmax(0,1fr)_180px_110px_110px]">
               <input
-                className="border border-zinc-300 dark:border-zinc-600 bg-zinc-50 dark:bg-zinc-900 p-2 rounded flex-1 text-zinc-900 dark:text-zinc-100"
+                className="min-w-0 border border-zinc-300 dark:border-zinc-600 bg-zinc-50 dark:bg-zinc-900 p-2 rounded text-zinc-900 dark:text-zinc-100 sm:col-span-2 lg:col-span-1"
                 placeholder="Título da etapa"
                 value={stepTitle}
                 onChange={e => setStepTitle(e.target.value)}
               />
               <select
-                className="border border-zinc-300 dark:border-zinc-600 bg-zinc-50 dark:bg-zinc-900 p-2 rounded text-zinc-900 dark:text-zinc-100"
+                className="min-w-0 border border-zinc-300 dark:border-zinc-600 bg-zinc-50 dark:bg-zinc-900 p-2 rounded text-zinc-900 dark:text-zinc-100"
                 value={stepType}
                 onChange={e => setStepType(e.target.value)}
               >
@@ -133,7 +133,7 @@ export default function ManageVotingPage() {
               <input
                 type="number"
                 min={1}
-                className="border border-zinc-300 dark:border-zinc-600 bg-zinc-50 dark:bg-zinc-900 p-2 rounded w-24 text-zinc-900 dark:text-zinc-100"
+                className="min-w-0 border border-zinc-300 dark:border-zinc-600 bg-zinc-50 dark:bg-zinc-900 p-2 rounded text-zinc-900 dark:text-zinc-100"
                 placeholder="Mínimo"
                 value={minSelect}
                 onChange={e => setMinSelect(Number(e.target.value))}
@@ -141,14 +141,14 @@ export default function ManageVotingPage() {
               <input
                 type="number"
                 min={1}
-                className="border border-zinc-300 dark:border-zinc-600 bg-zinc-50 dark:bg-zinc-900 p-2 rounded w-24 text-zinc-900 dark:text-zinc-100"
+                className="min-w-0 border border-zinc-300 dark:border-zinc-600 bg-zinc-50 dark:bg-zinc-900 p-2 rounded text-zinc-900 dark:text-zinc-100"
                 placeholder="Máximo"
                 value={maxSelect}
                 onChange={e => setMaxSelect(Number(e.target.value))}
               />
               <button
                 onClick={handleAddStep}
-                className="bg-blue-600 hover:bg-blue-700 text-white px-5 py-2 rounded-lg font-semibold shadow transition"
+                className="bg-blue-600 hover:bg-blue-700 text-white px-5 py-2 rounded-lg font-semibold shadow transition sm:col-span-2 lg:col-span-4"
                 disabled={loading}
               >
                 Adicionar
@@ -160,9 +160,9 @@ export default function ManageVotingPage() {
           <div className="bg-white dark:bg-zinc-800 border border-zinc-200 dark:border-zinc-700 rounded-xl shadow-md p-6 mb-6">
             <h2 className="font-semibold mb-4 text-zinc-800 dark:text-zinc-100">Adicionar opção a uma etapa</h2>
             <div className="flex flex-col gap-3">
-              <div className="flex flex-col gap-3 md:flex-row md:items-end">
+              <div className="grid grid-cols-1 gap-3 md:grid-cols-2">
                 <select
-                  className="border border-zinc-300 dark:border-zinc-600 bg-zinc-50 dark:bg-zinc-900 p-2 rounded flex-1 text-zinc-900 dark:text-zinc-100"
+                  className="min-w-0 border border-zinc-300 dark:border-zinc-600 bg-zinc-50 dark:bg-zinc-900 p-2 rounded text-zinc-900 dark:text-zinc-100"
                   value={selectedStep || ""}
                   onChange={e => setSelectedStep(e.target.value)}
                 >
@@ -172,7 +172,7 @@ export default function ManageVotingPage() {
                   ))}
                 </select>
                 <input
-                  className="border border-zinc-300 dark:border-zinc-600 bg-zinc-50 dark:bg-zinc-900 p-2 rounded flex-1 text-zinc-900 dark:text-zinc-100"
+                  className="min-w-0 border border-zinc-300 dark:border-zinc-600 bg-zinc-50 dark:bg-zinc-900 p-2 rounded text-zinc-900 dark:text-zinc-100"
                   placeholder="Título da opção"
                   value={optionTitle}
                   onChange={e => setOptionTitle(e.target.value)}
@@ -180,8 +180,8 @@ export default function ManageVotingPage() {
               </div>
 
               {/* Upload de imagem */}
-              <div className="flex items-center gap-4">
-                <label className="flex items-center gap-2 cursor-pointer">
+              <div className="flex flex-col gap-3 rounded-lg border border-zinc-200 bg-zinc-50 p-3 dark:border-zinc-700 dark:bg-zinc-900 sm:flex-row sm:items-center sm:justify-between">
+                <label className="flex flex-wrap items-center gap-2 cursor-pointer min-w-0">
                   <span className="text-sm text-zinc-600 dark:text-zinc-300">Imagem:</span>
                   <input
                     type="file"
@@ -194,7 +194,7 @@ export default function ManageVotingPage() {
                   </span>
                 </label>
                 {optionImagePreview && (
-                  <div className="relative">
+                  <div className="relative shrink-0">
                     <img
                       src={optionImagePreview}
                       alt="Preview"
@@ -215,7 +215,7 @@ export default function ManageVotingPage() {
 
               <button
                 onClick={handleAddOption}
-                className="self-end bg-blue-600 hover:bg-blue-700 text-white px-5 py-2 rounded-lg font-semibold shadow transition disabled:opacity-50"
+                className="w-full bg-blue-600 hover:bg-blue-700 text-white px-5 py-2 rounded-lg font-semibold shadow transition disabled:opacity-50 sm:w-auto sm:self-end"
                 disabled={loading}
               >
                 {loading ? "Adicionando..." : "Adicionar Opção"}
@@ -232,9 +232,9 @@ export default function ManageVotingPage() {
                   key={s.id}
                   className="border border-zinc-200 dark:border-zinc-700 rounded-lg p-5 bg-zinc-50 dark:bg-zinc-900"
                 >
-                  <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-2 mb-3">
-                    <div className="font-bold text-lg text-zinc-900 dark:text-zinc-100">{s.title}</div>
-                    <div className="flex flex-wrap gap-2 text-xs items-center">
+                  <div className="flex flex-col gap-3 mb-3 lg:flex-row lg:items-start lg:justify-between">
+                    <div className="min-w-0 font-bold text-lg text-zinc-900 dark:text-zinc-100 break-words">{s.title}</div>
+                    <div className="flex flex-wrap gap-2 text-xs items-center lg:justify-end">
                       <span className="bg-zinc-200 dark:bg-zinc-700 text-zinc-700 dark:text-zinc-200 px-2 py-1 rounded">
                         {s.type === "multiple" ? "Seleção múltipla" : "Seleção única"}
                       </span>
@@ -258,7 +258,7 @@ export default function ManageVotingPage() {
                             }
                           }
                         }}
-                        className="ml-2 bg-red-100 hover:bg-red-200 text-red-700 px-3 py-1 rounded transition text-xs font-semibold"
+                        className="bg-red-100 hover:bg-red-200 text-red-700 px-3 py-1 rounded transition text-xs font-semibold"
                       >
                         Excluir etapa
                       </button>
@@ -272,16 +272,16 @@ export default function ManageVotingPage() {
                         s.options.map((o: any) => (
                           <div
                             key={o.id}
-                            className="flex items-center gap-2 bg-blue-50 dark:bg-blue-900/30 border border-blue-200 dark:border-blue-700 rounded-lg px-3 py-1.5"
+                            className="flex max-w-full items-center gap-2 bg-blue-50 dark:bg-blue-900/30 border border-blue-200 dark:border-blue-700 rounded-lg px-3 py-1.5"
                           >
                             {o.imageUrl && (
                               <img
                                 src={`${IMAGE_BASE}${o.imageUrl}`}
                                 alt={o.label}
-                                className="w-8 h-8 object-cover rounded"
+                                className="w-8 h-8 shrink-0 object-cover rounded"
                               />
                             )}
-                            <span className="text-sm font-medium text-blue-800 dark:text-blue-200">
+                            <span className="min-w-0 break-words text-sm font-medium text-blue-800 dark:text-blue-200">
                               {o.label}
                             </span>
                             <button
@@ -298,7 +298,7 @@ export default function ManageVotingPage() {
                                   }
                                 }
                               }}
-                              className="bg-red-200 hover:bg-red-300 text-red-700 rounded-full px-2 py-0.5 text-xs font-bold transition"
+                              className="shrink-0 bg-red-200 hover:bg-red-300 text-red-700 rounded-full px-2 py-0.5 text-xs font-bold transition"
                             >
                               ×
                             </button>
@@ -316,7 +316,7 @@ export default function ManageVotingPage() {
 
           <button
             onClick={() => router.push("/dashboard")}
-            className="mt-8 text-blue-600 underline"
+            className="mt-8 rounded-lg bg-zinc-200 px-5 py-2 font-semibold text-zinc-800 shadow transition hover:bg-zinc-300 dark:bg-zinc-700 dark:text-zinc-100 dark:hover:bg-zinc-600"
           >
             Voltar ao dashboard
           </button>

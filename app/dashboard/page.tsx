@@ -17,6 +17,8 @@ type PreRegisteredUser = {
   registered: boolean
 }
 
+const PRE_REGISTERED_PAGE_SIZE_OPTIONS = [10, 50, 100]
+
 export default function Dashboard() {
   const { user, token } = useContext(AuthContext)
   const router = useRouter()
@@ -28,11 +30,19 @@ export default function Dashboard() {
   const [preCpf, setPreCpf] = useState("")
   const [preStatus, setPreStatus] = useState<"apto" | "inapto">("apto")
   const [editingPreId, setEditingPreId] = useState<string | null>(null)
+  const [preSearchEmail, setPreSearchEmail] = useState("")
+  const [preSearchCpf, setPreSearchCpf] = useState("")
+  const [prePage, setPrePage] = useState(1)
+  const [prePageSize, setPrePageSize] = useState(10)
   const [loading, setLoading] = useState(true)
 
   useEffect(() => {
     if (token && user) load()
   }, [token, user])
+
+  useEffect(() => {
+    setPrePage(1)
+  }, [preSearchEmail, preSearchCpf, prePageSize])
 
   async function load() {
     setLoading(true)
@@ -159,6 +169,19 @@ export default function Dashboard() {
 
   const isVoter = user?.role === "VOTER"
   const isAdmin = user?.role === "ADMIN"
+  const filteredPreRegisteredUsers = preRegisteredUsers.filter(preUser => {
+    const emailMatch = preUser.email.toLowerCase().includes(preSearchEmail.trim().toLowerCase())
+    const cpfMatch = preUser.cpf.replace(/\D/g, "").includes(preSearchCpf.replace(/\D/g, ""))
+
+    return emailMatch && cpfMatch
+  })
+  const prePageCount = Math.max(1, Math.ceil(filteredPreRegisteredUsers.length / prePageSize))
+  const currentPrePage = Math.min(prePage, prePageCount)
+  const firstPreIndex = (currentPrePage - 1) * prePageSize
+  const paginatedPreRegisteredUsers = filteredPreRegisteredUsers.slice(
+    firstPreIndex,
+    firstPreIndex + prePageSize
+  )
 
   return (
     <RequireAuth>
@@ -320,7 +343,7 @@ export default function Dashboard() {
                 )}
               </div>
 
-              <div className="grid grid-cols-1 md:grid-cols-[1fr_1fr_150px_120px_auto] gap-3 mb-6">
+              <div className="grid grid-cols-1 gap-3 mb-6 sm:grid-cols-2">
                 <input
                   className="border border-zinc-300 dark:border-zinc-600 bg-zinc-50 dark:bg-zinc-900 text-zinc-900 dark:text-zinc-100 p-2 rounded-lg"
                   placeholder="Nome"
@@ -350,78 +373,143 @@ export default function Dashboard() {
                 </select>
                 <button
                   onClick={handleSavePreRegistered}
-                  className="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg font-semibold shadow transition"
+                  className="w-full bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg font-semibold shadow transition sm:col-span-2"
                 >
-                  {editingPreId ? "Salvar" : "Adicionar"}
+                  {editingPreId ? "Salvar" : "Adicionar novo usuário"}
                 </button>
+              </div>
+
+              <div className="mb-5 grid grid-cols-1 gap-3 rounded-lg border border-zinc-200 bg-zinc-50 p-4 dark:border-zinc-700 dark:bg-zinc-900 sm:grid-cols-2">
+                <input
+                  className="border border-zinc-300 dark:border-zinc-600 bg-white dark:bg-zinc-800 text-zinc-900 dark:text-zinc-100 p-2 rounded-lg"
+                  placeholder="Buscar por email"
+                  type="email"
+                  value={preSearchEmail}
+                  onChange={e => setPreSearchEmail(e.target.value)}
+                />
+                <input
+                  className="border border-zinc-300 dark:border-zinc-600 bg-white dark:bg-zinc-800 text-zinc-900 dark:text-zinc-100 p-2 rounded-lg"
+                  placeholder="Buscar por CPF"
+                  value={preSearchCpf}
+                  onChange={e => setPreSearchCpf(formatCpf(e.target.value))}
+                />
+                <div className="flex flex-col gap-3 text-sm text-zinc-500 dark:text-zinc-400 sm:col-span-2 sm:flex-row sm:items-center sm:justify-between">
+                  <span>
+                    Exibindo {paginatedPreRegisteredUsers.length} de {filteredPreRegisteredUsers.length} usuários encontrados.
+                  </span>
+                  <label className="flex items-center gap-2">
+                    <span>Por página:</span>
+                    <select
+                      className="rounded-lg border border-zinc-300 bg-white p-2 text-zinc-900 dark:border-zinc-600 dark:bg-zinc-800 dark:text-zinc-100"
+                      value={prePageSize}
+                      onChange={e => setPrePageSize(Number(e.target.value))}
+                    >
+                      {PRE_REGISTERED_PAGE_SIZE_OPTIONS.map(size => (
+                        <option key={size} value={size}>
+                          {size}
+                        </option>
+                      ))}
+                    </select>
+                  </label>
+                </div>
               </div>
 
               {preRegisteredUsers.length === 0 ? (
                 <div className="text-center py-10 text-zinc-400">
                   Nenhum usuário pré-cadastrado.
                 </div>
-              ) : (
-                <div className="overflow-x-auto">
-                  <table className="w-full text-sm">
-                    <thead>
-                      <tr className="border-b border-zinc-200 dark:border-zinc-700 text-left text-zinc-500 dark:text-zinc-400">
-                        <th className="py-3 pr-3">Nome</th>
-                        <th className="py-3 pr-3">Email</th>
-                        <th className="py-3 pr-3">CPF</th>
-                        <th className="py-3 pr-3">Status</th>
-                        <th className="py-3 pr-3">Cadastro</th>
-                        <th className="py-3 text-right">Ações</th>
-                      </tr>
-                    </thead>
-                    <tbody>
-                      {preRegisteredUsers.map(preUser => (
-                        <tr key={preUser.id} className="border-b border-zinc-100 dark:border-zinc-700">
-                          <td className="py-3 pr-3 text-zinc-900 dark:text-zinc-100 font-medium">
-                            {preUser.name}
-                          </td>
-                          <td className="py-3 pr-3 text-zinc-600 dark:text-zinc-300">
-                            {preUser.email}
-                          </td>
-                          <td className="py-3 pr-3 text-zinc-600 dark:text-zinc-300">
-                            {formatCpf(preUser.cpf)}
-                          </td>
-                          <td className="py-3 pr-3">
-                            <span className={`text-xs font-bold px-2 py-1 rounded-full ${
-                              preUser.status === "apto"
-                                ? "text-green-700 bg-green-100 dark:bg-green-900/30 dark:text-green-400"
-                                : "text-red-700 bg-red-100 dark:bg-red-900/30 dark:text-red-400"
-                            }`}>
-                              {preUser.status.toUpperCase()}
-                            </span>
-                          </td>
-                          <td className="py-3 pr-3">
-                            <span className={`text-xs font-bold px-2 py-1 rounded-full ${
-                              preUser.registered
-                                ? "text-blue-700 bg-blue-100 dark:bg-blue-900/30 dark:text-blue-400"
-                                : "text-zinc-600 bg-zinc-100 dark:bg-zinc-700 dark:text-zinc-300"
-                            }`}>
-                              {preUser.registered ? "Já se cadastrou" : "Pendente"}
-                            </span>
-                          </td>
-                          <td className="py-3 text-right">
-                            {!preUser.registered ? (
-                              <button
-                                onClick={() => handleEditPreRegistered(preUser)}
-                                className="text-blue-600 hover:underline font-medium"
-                              >
-                                Editar
-                              </button>
-                            ) : (
-                              <span className="text-zinc-400 dark:text-zinc-500">
-                                Bloqueado
-                              </span>
-                            )}
-                          </td>
-                        </tr>
-                      ))}
-                    </tbody>
-                  </table>
+              ) : filteredPreRegisteredUsers.length === 0 ? (
+                <div className="text-center py-10 text-zinc-400">
+                  Nenhum usuário encontrado para essa busca.
                 </div>
+              ) : (
+                <>
+                  <div className="overflow-x-auto">
+                    <table className="w-full min-w-[760px] text-sm">
+                      <thead>
+                        <tr className="border-b border-zinc-200 dark:border-zinc-700 text-left text-zinc-500 dark:text-zinc-400">
+                          <th className="py-3 pr-3">Nome</th>
+                          <th className="py-3 pr-3">Email</th>
+                          <th className="py-3 pr-3">CPF</th>
+                          <th className="py-3 pr-3">Status</th>
+                          <th className="py-3 pr-3">Cadastro</th>
+                          <th className="py-3 text-right">Ações</th>
+                        </tr>
+                      </thead>
+                      <tbody>
+                        {paginatedPreRegisteredUsers.map(preUser => (
+                          <tr key={preUser.id} className="border-b border-zinc-100 dark:border-zinc-700">
+                            <td className="py-3 pr-3 text-zinc-900 dark:text-zinc-100 font-medium">
+                              {preUser.name}
+                            </td>
+                            <td className="py-3 pr-3 text-zinc-600 dark:text-zinc-300">
+                              {preUser.email}
+                            </td>
+                            <td className="py-3 pr-3 text-zinc-600 dark:text-zinc-300">
+                              {formatCpf(preUser.cpf)}
+                            </td>
+                            <td className="py-3 pr-3">
+                              <span className={`text-xs font-bold px-2 py-1 rounded-full ${
+                                preUser.status === "apto"
+                                  ? "text-green-700 bg-green-100 dark:bg-green-900/30 dark:text-green-400"
+                                  : "text-red-700 bg-red-100 dark:bg-red-900/30 dark:text-red-400"
+                              }`}>
+                                {preUser.status.toUpperCase()}
+                              </span>
+                            </td>
+                            <td className="py-3 pr-3">
+                              <span className={`text-xs font-bold px-2 py-1 rounded-full ${
+                                preUser.registered
+                                  ? "text-blue-700 bg-blue-100 dark:bg-blue-900/30 dark:text-blue-400"
+                                  : "text-zinc-600 bg-zinc-100 dark:bg-zinc-700 dark:text-zinc-300"
+                              }`}>
+                                {preUser.registered ? "Já se cadastrou" : "Pendente"}
+                              </span>
+                            </td>
+                            <td className="py-3 text-right">
+                              {!preUser.registered ? (
+                                <button
+                                  onClick={() => handleEditPreRegistered(preUser)}
+                                  className="text-blue-600 hover:underline font-medium"
+                                >
+                                  Editar
+                                </button>
+                              ) : (
+                                <span className="text-zinc-400 dark:text-zinc-500">
+                                  Bloqueado
+                                </span>
+                              )}
+                            </td>
+                          </tr>
+                        ))}
+                      </tbody>
+                    </table>
+                  </div>
+
+                  <div className="mt-5 flex flex-col gap-3 text-sm text-zinc-600 dark:text-zinc-300 sm:flex-row sm:items-center sm:justify-between">
+                    <span>
+                      Página {currentPrePage} de {prePageCount}
+                    </span>
+                    <div className="flex gap-2">
+                      <button
+                        type="button"
+                        onClick={() => setPrePage(page => Math.max(1, page - 1))}
+                        disabled={currentPrePage === 1}
+                        className="rounded-lg border border-zinc-300 px-4 py-2 font-medium transition hover:bg-zinc-100 disabled:cursor-not-allowed disabled:opacity-50 dark:border-zinc-600 dark:hover:bg-zinc-700"
+                      >
+                        Anterior
+                      </button>
+                      <button
+                        type="button"
+                        onClick={() => setPrePage(page => Math.min(prePageCount, page + 1))}
+                        disabled={currentPrePage === prePageCount}
+                        className="rounded-lg border border-zinc-300 px-4 py-2 font-medium transition hover:bg-zinc-100 disabled:cursor-not-allowed disabled:opacity-50 dark:border-zinc-600 dark:hover:bg-zinc-700"
+                      >
+                        Próxima
+                      </button>
+                    </div>
+                  </div>
+                </>
               )}
             </div>
           )}
