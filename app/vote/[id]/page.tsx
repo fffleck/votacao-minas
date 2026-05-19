@@ -2,6 +2,7 @@
 
 import { useEffect, useState, useContext } from "react"
 import { useParams, useRouter } from "next/navigation"
+import Link from "next/link"
 import { api } from "@/services/api"
 import RequireAuth from "@/components/RequireAuth"
 import { AuthContext } from "@/contexts/AuthContext"
@@ -144,16 +145,27 @@ export default function VotePage() {
     }
   }
 
-  function handleSaveAndExit() {
-    saveProgress(answers, completedStepIds)
-    router.push("/dashboard")
-  }
-
   function handleExitWithoutVoting() {
     if (!confirm("Deseja sair sem registrar o voto? Sua sessão será encerrada.")) return
     localStorage.removeItem(progressKey)
     logout()
     router.push("/login")
+  }
+
+  function getOptionImage(option: Option) {
+    const normalizedLabel = option.label
+      .normalize("NFD")
+      .replace(/[\u0300-\u036f]/g, "")
+      .toLowerCase()
+      .trim()
+
+    if (normalizedLabel === "sim") return { src: "/assets/positivo.png", isSpecial: true }
+    if (normalizedLabel === "nao") return { src: "/assets/negativo.png", isSpecial: true }
+    if (normalizedLabel === "branco / nulo" || normalizedLabel === "branco/nulo") {
+      return { src: "/assets/nulo.jpeg", isSpecial: true }
+    }
+
+    return option.imageUrl ? { src: `${IMAGE_BASE}${option.imageUrl}`, isSpecial: false } : null
   }
 
   if (loading || !user) {
@@ -171,60 +183,97 @@ export default function VotePage() {
 
   return (
     <RequireAuth>
-      <div className="min-h-screen bg-zinc-50 dark:bg-neutral-900 py-10 px-4">
-        <div className="max-w-4xl mx-auto">
+      <div className="min-h-screen bg-zinc-50 dark:bg-neutral-900">
+        <header className="h-[150px]">
+          <div className="mx-auto flex h-full max-w-4xl items-start justify-between px-4">
+            <img
+              src="/assets/logo.jpeg"
+              alt="Logo"
+              className="mt-4 h-[118px] w-auto object-contain"
+            />
+
+            <button
+              onClick={handleExitWithoutVoting}
+              className="mt-4 rounded-lg bg-red-100 px-5 py-2 font-semibold text-red-700 transition hover:bg-red-200 dark:bg-red-900/30 dark:text-red-300 dark:hover:bg-red-900/50"
+            >
+              Sair
+            </button>
+          </div>
+        </header>
+
+        <div className="max-w-4xl mx-auto px-4 pb-10">
 
           {/* Título da votação */}
-          <h1 className="text-3xl font-bold tracking-tight text-zinc-800 dark:text-zinc-100 mb-1">
+          <h1 className="text-center text-3xl font-bold tracking-tight text-zinc-800 dark:text-zinc-100 mb-1">
             {voting?.title}
           </h1>
           {voting?.description && (
-            <p className="text-zinc-500 dark:text-zinc-400 mb-6">{voting.description}</p>
+            <p className="text-center text-zinc-500 dark:text-zinc-400 mb-6">{voting.description}</p>
           )}
 
-          {/* Indicador de etapas */}
-          <div className="flex items-center gap-2 mb-8">
-            {steps.map((s, i) => (
-              <div key={s.id} className="flex items-center gap-2">
-                <div className={`w-9 h-9 rounded-full flex items-center justify-center text-sm font-bold transition-colors ${
-                  i < currentStepIndex
-                    ? "bg-green-500 text-white"
-                    : i === currentStepIndex
-                      ? "bg-blue-600 text-white ring-4 ring-blue-100 dark:ring-blue-900"
-                      : "bg-zinc-200 dark:bg-zinc-700 text-zinc-500"
-                }`}>
-                  {i < currentStepIndex ? "✓" : i + 1}
+          {steps.length > 1 && (
+            <div className="flex items-center gap-2 mb-8">
+              {steps.map((s, i) => (
+                <div key={s.id} className="flex items-center gap-2">
+                  <div className={`w-9 h-9 rounded-full flex items-center justify-center text-sm font-bold transition-colors ${
+                    i < currentStepIndex
+                      ? "bg-green-500 text-white"
+                      : i === currentStepIndex
+                        ? "bg-blue-600 text-white ring-4 ring-blue-100 dark:ring-blue-900"
+                        : "bg-zinc-200 dark:bg-zinc-700 text-zinc-500"
+                  }`}>
+                    {i < currentStepIndex ? "✓" : i + 1}
+                  </div>
+                  {i < steps.length - 1 && (
+                    <div className={`h-1 w-10 rounded-full transition-colors ${
+                      i < currentStepIndex ? "bg-green-500" : "bg-zinc-200 dark:bg-zinc-700"
+                    }`} />
+                  )}
                 </div>
-                {i < steps.length - 1 && (
-                  <div className={`h-1 w-10 rounded-full transition-colors ${
-                    i < currentStepIndex ? "bg-green-500" : "bg-zinc-200 dark:bg-zinc-700"
-                  }`} />
-                )}
-              </div>
-            ))}
-            <span className="ml-3 text-sm text-zinc-500 dark:text-zinc-400">
-              Etapa {currentStepIndex + 1} de {steps.length}
-            </span>
-          </div>
+              ))}
+              <span className="ml-3 text-sm text-zinc-500 dark:text-zinc-400">
+                Etapa {currentStepIndex + 1} de {steps.length}
+              </span>
+            </div>
+          )}
 
           {/* Card da etapa atual */}
           <div className="bg-white dark:bg-zinc-800 border border-zinc-200 dark:border-zinc-700 rounded-xl shadow-md p-6">
             <h2 className="font-semibold text-xl text-zinc-900 dark:text-zinc-100 mb-1">
               {currentStep.title}
             </h2>
-            <p className="text-sm text-zinc-500 dark:text-zinc-400 mb-6">
-              {currentStep.type === "single"
-                ? "Selecione uma opção"
-                : `Selecione entre ${currentStep.minSelect} e ${currentStep.maxSelect} opções`}
-            </p>
+            <div className="mb-6 flex flex-col gap-3 sm:flex-row sm:items-center">
+              <p className="text-sm font-medium text-zinc-600 dark:text-zinc-300">
+                Antes de executar seu voto, conheça a chapa
+              </p>
+              <Link
+                href="/knowme"
+                className="inline-flex w-fit items-center justify-center rounded-lg bg-blue-600 px-4 py-2 text-sm font-semibold text-white shadow transition hover:bg-blue-700"
+              >
+                Conhecer chapa
+              </Link>
+            </div>
+
+            <div className="mb-6 flex justify-center">
+              <img
+                src="/assets/logo_chapa.png"
+                alt="Logo da chapa"
+                className="w-full max-w-md object-contain"
+              />
+            </div>
 
             {/* Grid de opções — máx 4 colunas */}
-            <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-4">
+            <div className={`grid gap-4 ${
+              currentStep.options.length === 3
+                ? "grid-cols-1 sm:grid-cols-3"
+                : "grid-cols-2 sm:grid-cols-3 md:grid-cols-4"
+            }`}>
               {currentStep.options.map(opt => {
                 const isSelected =
                   currentStep.type === "single"
                     ? answers[currentStep.id] === opt.id
                     : (answers[currentStep.id] as string[])?.includes(opt.id)
+                const optionImage = getOptionImage(opt)
 
                 return (
                   <button
@@ -235,19 +284,29 @@ export default function VotePage() {
                         ? handleSingleSelect(currentStep.id, opt.id)
                         : handleMultiToggle(currentStep.id, opt.id)
                     }
-                    className={`flex flex-col items-center gap-2 rounded-xl border-2 p-3 transition focus:outline-none ${
+                    className={`flex items-center rounded-xl border-2 p-3 transition focus:outline-none ${
+                      optionImage?.isSpecial ? "min-h-24 flex-row justify-center gap-4" : "flex-col gap-2"
+                    } ${
                       isSelected
                         ? "border-blue-500 bg-blue-50 dark:bg-blue-900/30 shadow-md"
                         : "border-zinc-200 dark:border-zinc-700 hover:border-zinc-400 dark:hover:border-zinc-500 bg-white dark:bg-zinc-900"
                     }`}
                   >
                     {/* Imagem ou placeholder */}
-                    {opt.imageUrl ? (
+                    {optionImage?.isSpecial ? (
                       <img
-                        src={`${IMAGE_BASE}${opt.imageUrl}`}
-                        alt={opt.label}
-                        className="w-full aspect-square object-contain rounded-lg bg-zinc-100 dark:bg-zinc-700"
+                        src={optionImage.src}
+                        alt=""
+                        className="h-12 w-12 object-contain"
                       />
+                    ) : optionImage ? (
+                      <div className="flex aspect-square w-full items-center justify-center rounded-lg bg-zinc-100 dark:bg-zinc-700">
+                        <img
+                          src={optionImage.src}
+                          alt={opt.label}
+                          className="h-full w-full object-contain rounded-lg"
+                        />
+                      </div>
                     ) : (
                       <div className="w-full aspect-square bg-zinc-100 dark:bg-zinc-700 rounded-lg flex items-center justify-center text-zinc-400 text-xs">
                         Sem imagem
@@ -294,22 +353,6 @@ export default function VotePage() {
                 Próximo →
               </button>
             )}
-          </div>
-
-          <div className="mt-3 grid grid-cols-1 sm:grid-cols-2 gap-3">
-            <button
-              onClick={handleSaveAndExit}
-              className="w-full bg-orange-100 hover:bg-orange-200 dark:bg-orange-900/30 dark:hover:bg-orange-900/50 text-orange-700 dark:text-orange-300 font-semibold py-3 rounded-xl transition"
-            >
-              Salvar e sair
-            </button>
-
-            <button
-              onClick={handleExitWithoutVoting}
-              className="w-full bg-red-100 hover:bg-red-200 dark:bg-red-900/30 dark:hover:bg-red-900/50 text-red-700 dark:text-red-300 font-semibold py-3 rounded-xl transition"
-            >
-              Sair sem votar
-            </button>
           </div>
 
         </div>

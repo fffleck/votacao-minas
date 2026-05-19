@@ -6,7 +6,7 @@ import { api } from "@/services/api"
 import RequireAuth from "@/components/RequireAuth"
 import axios from "axios"
 
-const IMAGE_BASE = "http://localhost:3333"
+const IMAGE_BASE = "http://localhost:3000"
 
 export default function ManageVotingPage() {
   const { id } = useParams()
