@@ -3,7 +3,6 @@
 import { useState, useContext, useEffect } from "react"
 import { AuthContext } from "@/contexts/AuthContext"
 import { useRouter } from "next/navigation"
-import Link from "next/link"
 
 export default function LoginPage() {
   const { login } = useContext(AuthContext)
@@ -46,11 +45,7 @@ export default function LoginPage() {
 
         <div className="mb-6 space-y-3 rounded-lg border border-blue-100 bg-blue-50 px-4 py-3 text-center text-xl font-medium text-zinc-800 shadow-sm dark:border-blue-900/40 dark:bg-blue-900/20 dark:text-zinc-100">
           <p>
-            Para executar o voto é necessário se cadastrar. Para isso{" "}
-            <Link href="/register" className="text-blue-600 hover:underline font-medium">
-              clique aqui
-            </Link>{" "}
-            e siga as instruções na tela.
+            Para executar o voto, entre com o email cadastrado no Sindicato.
           </p>
 
           <p>
@@ -97,10 +92,7 @@ export default function LoginPage() {
           </button>
 
           <p className="text-center text-sm text-zinc-500 dark:text-zinc-400">
-            Não tem conta?{" "}
-            <Link href="/register" className="text-blue-600 hover:underline font-medium">
-              Cadastre-se
-            </Link>
+            Em caso de dificuldade no acesso, procure a administração do Sindicato.
           </p>
         </div>
       </div>
