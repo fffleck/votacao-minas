@@ -8,11 +8,18 @@ import axios from "axios"
 
 const IMAGE_BASE = "http://localhost:3000"
 
+type VotingStatus = "draft" | "open" | "closed"
+
 export default function ManageVotingPage() {
   const { id } = useParams()
   const router = useRouter()
 
   const [steps, setSteps] = useState<any[]>([])
+  const [votingTitle, setVotingTitle] = useState("")
+  const [votingDescription, setVotingDescription] = useState("")
+  const [votingStatus, setVotingStatus] = useState<VotingStatus>("draft")
+  const [votingStartDate, setVotingStartDate] = useState("")
+  const [votingEndDate, setVotingEndDate] = useState("")
   const [stepTitle, setStepTitle] = useState("")
   const [stepType, setStepType] = useState("single")
   const [minSelect, setMinSelect] = useState(1)
@@ -26,12 +33,70 @@ export default function ManageVotingPage() {
   const [loading, setLoading] = useState(false)
 
   useEffect(() => {
+    loadVoting()
     loadSteps()
   }, [])
+
+  function formatDateTimeLocal(iso: string | null | undefined) {
+    if (!iso) return ""
+    const date = new Date(iso)
+    const offsetDate = new Date(date.getTime() - date.getTimezoneOffset() * 60000)
+    return offsetDate.toISOString().slice(0, 16)
+  }
+
+  function getStatusLabel(status: string) {
+    if (status === "open") return "ABERTA"
+    if (status === "closed") return "FECHADA"
+    return "RASCUNHO"
+  }
+
+  function getStatusColor(status: string) {
+    if (status === "open") return "text-green-700 bg-green-100 dark:bg-green-900/30 dark:text-green-400"
+    if (status === "closed") return "text-red-700 bg-red-100 dark:bg-red-900/30 dark:text-red-400"
+    return "text-zinc-600 bg-zinc-100 dark:bg-zinc-700 dark:text-zinc-300"
+  }
+
+  async function loadVoting() {
+    const res = await api.get(`/votings/${id}`)
+    setVotingTitle(res.data.title || "")
+    setVotingDescription(res.data.description || "")
+    setVotingStatus(res.data.status || "draft")
+    setVotingStartDate(formatDateTimeLocal(res.data.startDate))
+    setVotingEndDate(formatDateTimeLocal(res.data.endDate))
+  }
 
   async function loadSteps() {
     const res = await api.get(`/voting-steps/${id}`)
     setSteps(res.data)
+  }
+
+  async function handleSaveVoting() {
+    if (!votingTitle.trim()) return alert("Informe o nome da votação")
+    if (votingStartDate && votingEndDate && new Date(votingStartDate) >= new Date(votingEndDate)) {
+      return alert("A data de início deve ser anterior à data de fim")
+    }
+
+    setLoading(true)
+    try {
+      const res = await api.patch(`/votings/${id}`, {
+        title: votingTitle,
+        description: votingDescription || null,
+        status: votingStatus,
+        startDate: votingStartDate || null,
+        endDate: votingEndDate || null
+      })
+
+      setVotingTitle(res.data.title || "")
+      setVotingDescription(res.data.description || "")
+      setVotingStatus(res.data.status || "draft")
+      setVotingStartDate(formatDateTimeLocal(res.data.startDate))
+      setVotingEndDate(formatDateTimeLocal(res.data.endDate))
+      alert("Informações da votação salvas com sucesso")
+    } catch (err: any) {
+      alert(err.response?.data?.error || "Erro ao salvar informações da votação")
+    } finally {
+      setLoading(false)
+    }
   }
 
   async function handleAddStep() {
@@ -111,6 +176,102 @@ export default function ManageVotingPage() {
           <h1 className="text-2xl sm:text-3xl font-bold tracking-tight text-zinc-800 dark:text-zinc-100 mb-8">
             Gerenciar Etapas e Opções
           </h1>
+
+          <div className="bg-white dark:bg-zinc-800 border border-zinc-200 dark:border-zinc-700 rounded-xl shadow-md p-6 mb-6">
+            <div className="flex flex-col gap-3 mb-5 sm:flex-row sm:items-center sm:justify-between">
+              <div>
+                <h2 className="font-semibold text-zinc-800 dark:text-zinc-100">
+                  Informações gerais da votação
+                </h2>
+                <p className="text-sm text-zinc-500 dark:text-zinc-400">
+                  Edite nome, status e datas automáticas. As datas são opcionais.
+                </p>
+              </div>
+              <span className={`w-fit rounded-full px-3 py-1 text-xs font-bold ${getStatusColor(votingStatus)}`}>
+                {getStatusLabel(votingStatus)}
+              </span>
+            </div>
+
+            <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
+              <div className="md:col-span-2">
+                <label className="mb-1 block text-sm font-medium text-zinc-700 dark:text-zinc-300">
+                  Nome da votação
+                </label>
+                <input
+                  className="w-full min-w-0 rounded border border-zinc-300 bg-zinc-50 p-2 text-zinc-900 dark:border-zinc-600 dark:bg-zinc-900 dark:text-zinc-100"
+                  placeholder="Nome da votação"
+                  value={votingTitle}
+                  onChange={e => setVotingTitle(e.target.value)}
+                />
+              </div>
+
+              <div className="md:col-span-2">
+                <label className="mb-1 block text-sm font-medium text-zinc-700 dark:text-zinc-300">
+                  Descrição
+                </label>
+                <textarea
+                  className="min-h-24 w-full min-w-0 resize-y rounded border border-zinc-300 bg-zinc-50 p-2 text-zinc-900 dark:border-zinc-600 dark:bg-zinc-900 dark:text-zinc-100"
+                  placeholder="Descrição opcional"
+                  value={votingDescription}
+                  onChange={e => setVotingDescription(e.target.value)}
+                />
+              </div>
+
+              <div>
+                <label className="mb-1 block text-sm font-medium text-zinc-700 dark:text-zinc-300">
+                  Status
+                </label>
+                <select
+                  className="w-full min-w-0 rounded border border-zinc-300 bg-zinc-50 p-2 text-zinc-900 dark:border-zinc-600 dark:bg-zinc-900 dark:text-zinc-100"
+                  value={votingStatus}
+                  onChange={e => setVotingStatus(e.target.value as VotingStatus)}
+                >
+                  <option value="draft">Rascunho</option>
+                  <option value="open">Aberta</option>
+                  <option value="closed">Fechada</option>
+                </select>
+              </div>
+
+              <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
+                <div>
+                  <label className="mb-1 block text-sm font-medium text-zinc-700 dark:text-zinc-300">
+                    Início automático
+                  </label>
+                  <input
+                    type="datetime-local"
+                    className="w-full min-w-0 rounded border border-zinc-300 bg-zinc-50 p-2 text-zinc-900 dark:border-zinc-600 dark:bg-zinc-900 dark:text-zinc-100"
+                    value={votingStartDate}
+                    onChange={e => setVotingStartDate(e.target.value)}
+                  />
+                </div>
+
+                <div>
+                  <label className="mb-1 block text-sm font-medium text-zinc-700 dark:text-zinc-300">
+                    Fim automático
+                  </label>
+                  <input
+                    type="datetime-local"
+                    className="w-full min-w-0 rounded border border-zinc-300 bg-zinc-50 p-2 text-zinc-900 dark:border-zinc-600 dark:bg-zinc-900 dark:text-zinc-100"
+                    value={votingEndDate}
+                    onChange={e => setVotingEndDate(e.target.value)}
+                  />
+                </div>
+              </div>
+            </div>
+
+            <div className="mt-5 flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+              <p className="text-xs text-zinc-500 dark:text-zinc-400">
+                Deixe as datas em branco para controlar a abertura e o fechamento manualmente.
+              </p>
+              <button
+                onClick={handleSaveVoting}
+                disabled={loading}
+                className="rounded-lg bg-blue-600 px-5 py-2 font-semibold text-white shadow transition hover:bg-blue-700 disabled:opacity-50"
+              >
+                Salvar informações
+              </button>
+            </div>
+          </div>
 
           {/* Adicionar etapa */}
           <div className="bg-white dark:bg-zinc-800 border border-zinc-200 dark:border-zinc-700 rounded-xl shadow-md p-6 mb-6">
