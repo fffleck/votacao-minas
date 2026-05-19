@@ -136,8 +136,7 @@ export default function VotePage() {
     try {
       await api.post("/votes", { votingId: id, answers })
       localStorage.removeItem(progressKey)
-      alert("Voto registrado com sucesso!")
-      router.push("/dashboard")
+      router.push("/vote/success")
     } catch (err: any) {
       alert(err.response?.data?.error || "Erro ao votar")
     } finally {

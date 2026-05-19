@@ -169,6 +169,10 @@ export default function Dashboard() {
 
   const isVoter = user?.role === "VOTER"
   const isAdmin = user?.role === "ADMIN"
+  const openAndNotVoted = votings.filter(
+    v => v.status === "open" && !votedIds.includes(v.id)
+  )
+  const voterAlreadyFinished = isVoter && votedIds.length > 0 && openAndNotVoted.length === 0
   const filteredPreRegisteredUsers = preRegisteredUsers.filter(preUser => {
     const emailMatch = preUser.email.toLowerCase().includes(preSearchEmail.trim().toLowerCase())
     const cpfMatch = preUser.cpf.replace(/\D/g, "").includes(preSearchCpf.replace(/\D/g, ""))
@@ -185,6 +189,32 @@ export default function Dashboard() {
 
   return (
     <RequireAuth>
+      {voterAlreadyFinished ? (
+        <main className="min-h-screen bg-zinc-50 px-4 dark:bg-neutral-900">
+          <header className="mx-auto flex h-[150px] max-w-4xl items-start justify-between">
+            <img
+              src="/assets/logo.jpeg"
+              alt="Logo"
+              className="mt-4 h-[118px] w-auto object-contain"
+            />
+
+            <div className="mt-4">
+              <LogoutButton />
+            </div>
+          </header>
+
+          <section className="mx-auto flex min-h-[calc(100vh-150px)] max-w-4xl items-center justify-center pb-20">
+            <div className="text-center">
+              <h1 className="mb-4 text-3xl font-bold tracking-tight text-zinc-900 dark:text-zinc-100">
+                Você já executou seu voto.
+              </h1>
+              <p className="text-xl font-medium leading-relaxed text-zinc-700 dark:text-zinc-300">
+                Acompanhe os resultados pela página do Sindicato.
+              </p>
+            </div>
+          </section>
+        </main>
+      ) : (
       <div className="min-h-screen bg-zinc-50 dark:bg-neutral-900 py-10 px-2">
         <div className="max-w-3xl mx-auto">
 
@@ -516,6 +546,7 @@ export default function Dashboard() {
 
         </div>
       </div>
+      )}
     </RequireAuth>
   )
 }
