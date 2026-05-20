@@ -47,6 +47,8 @@ export default function Dashboard() {
   const [newUserCpf, setNewUserCpf] = useState("")
   const [newUserPassword, setNewUserPassword] = useState("")
   const [creatingUser, setCreatingUser] = useState(false)
+  const [sendingInvitationUserId, setSendingInvitationUserId] = useState<string | null>(null)
+  const [sendingAllInvitations, setSendingAllInvitations] = useState(false)
   const [loading, setLoading] = useState(true)
 
   const isVoter = user?.role === "VOTER"
@@ -191,6 +193,32 @@ export default function Dashboard() {
       load()
     } catch (err: any) {
       alert(err.response?.data?.error || "Erro ao alterar senha")
+    }
+  }
+
+  async function handleSendInvitation(userId: string) {
+    setSendingInvitationUserId(userId)
+    try {
+      await api.post(`/users/${userId}/invitation`)
+      alert("Email enviado com sucesso")
+    } catch (err: any) {
+      alert(err.response?.data?.error || "Erro ao enviar email")
+    } finally {
+      setSendingInvitationUserId(null)
+    }
+  }
+
+  async function handleSendAllInvitations() {
+    if (!confirm("Deseja enviar o convite por email para todos os usuários votantes?")) return
+
+    setSendingAllInvitations(true)
+    try {
+      const response = await api.post("/users/invitations/send-all")
+      alert(`Envio concluído: ${response.data.sent} enviados, ${response.data.failed} falharam.`)
+    } catch (err: any) {
+      alert(err.response?.data?.error || "Erro ao enviar emails")
+    } finally {
+      setSendingAllInvitations(false)
     }
   }
 
@@ -368,13 +396,24 @@ export default function Dashboard() {
 
             {isAdmin && !loading && (
               <div className="mt-10 rounded-xl border border-zinc-200 bg-white p-6 shadow-md dark:border-zinc-700 dark:bg-zinc-800">
-                <div className="mb-5">
-                  <h2 className="text-xl font-bold text-zinc-900 dark:text-zinc-100">
-                    Usuários aptos para votação
-                  </h2>
-                  <p className="text-sm text-zinc-500 dark:text-zinc-400">
-                    Todos os usuários listados já podem fazer login. A senha inicial dos votantes migrados é formada pelos 5 últimos dígitos do CPF.
-                  </p>
+                <div className="mb-5 flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
+                  <div>
+                    <h2 className="text-xl font-bold text-zinc-900 dark:text-zinc-100">
+                      Usuários aptos para votação
+                    </h2>
+                    <p className="text-sm text-zinc-500 dark:text-zinc-400">
+                      Todos os usuários listados já podem fazer login. A senha inicial dos votantes migrados é formada pelos 5 últimos dígitos do CPF.
+                    </p>
+                  </div>
+
+                  <button
+                    type="button"
+                    onClick={handleSendAllInvitations}
+                    disabled={sendingAllInvitations}
+                    className="rounded-lg bg-emerald-600 px-5 py-2 font-semibold text-white shadow transition hover:bg-emerald-700 disabled:opacity-50"
+                  >
+                    {sendingAllInvitations ? "Enviando..." : "Enviar email para todos"}
+                  </button>
                 </div>
 
                 <div className="mb-6 rounded-lg border border-zinc-200 bg-zinc-50 p-4 dark:border-zinc-700 dark:bg-zinc-900">
@@ -475,7 +514,7 @@ export default function Dashboard() {
                 ) : (
                   <>
                     <div className="overflow-x-auto">
-                      <table className="w-full min-w-[900px] text-sm">
+                      <table className="w-full min-w-[1040px] text-sm">
                         <thead>
                           <tr className="border-b border-zinc-200 text-left text-zinc-500 dark:border-zinc-700 dark:text-zinc-400">
                             <th className="py-3 pr-3">Nome</th>
@@ -483,6 +522,7 @@ export default function Dashboard() {
                             <th className="py-3 pr-3">CPF</th>
                             <th className="py-3 pr-3">Perfil</th>
                             <th className="py-3 pr-3">Voto</th>
+                            <th className="py-3 pr-3">Email</th>
                             <th className="py-3 text-right">Senha</th>
                           </tr>
                         </thead>
@@ -515,6 +555,22 @@ export default function Dashboard() {
                                 }`}>
                                   {adminUser.hasVoted ? "Já votou" : "Não votou"}
                                 </span>
+                              </td>
+                              <td className="py-3 pr-3">
+                                {adminUser.role !== "ADMIN" && adminUser.cpf ? (
+                                  <button
+                                    type="button"
+                                    onClick={() => handleSendInvitation(adminUser.id)}
+                                    disabled={sendingInvitationUserId === adminUser.id}
+                                    className="font-medium text-emerald-700 hover:underline disabled:opacity-50 dark:text-emerald-400"
+                                  >
+                                    {sendingInvitationUserId === adminUser.id ? "Enviando..." : "Reenviar convite"}
+                                  </button>
+                                ) : (
+                                  <span className="text-zinc-400 dark:text-zinc-500">
+                                    Indisponível
+                                  </span>
+                                )}
                               </td>
                               <td className="py-3 text-right">
                                 {canEditPassword ? (
