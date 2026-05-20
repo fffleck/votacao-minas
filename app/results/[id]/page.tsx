@@ -9,10 +9,9 @@ type Option = { id: string; label: string }
 type Step = { id: string; title: string; type: string; options: Option[] }
 type OptionCount = { optionId: string; label: string; count: number }
 type StepResult = { stepId: string; stepTitle: string; stepType: string; options: OptionCount[] }
-type PreRegisteredUser = {
+type AdminUser = {
   id: string
-  status: "apto" | "inapto"
-  registered: boolean
+  role: string
 }
 type SummaryMetric = {
   label: string
@@ -41,26 +40,25 @@ export default function ResultsPage() {
 
   const [totalVotes, setTotalVotes] = useState(0)
   const [stepResults, setStepResults] = useState<StepResult[]>([])
-  const [preRegisteredTotal, setPreRegisteredTotal] = useState(0)
-  const [registeredTotal, setRegisteredTotal] = useState(0)
+  const [eligibleUsersTotal, setEligibleUsersTotal] = useState(0)
   const [voteTimeline, setVoteTimeline] = useState<VoteTimelinePoint[]>([])
   const [loading, setLoading] = useState(true)
 
   const load = useCallback(async () => {
     try {
-      const [resultsRes, stepsRes, preRegisteredRes] = await Promise.all([
+      const [resultsRes, stepsRes, usersRes] = await Promise.all([
         api.get(`/votes/${id}/results`),
         api.get(`/voting-steps/${id}`),
-        api.get("/users/pre-registered")
+        api.get("/users")
       ])
 
       const { totalVotes: total, votes, voteTimeline: timeline = [] } = resultsRes.data
       const steps: Step[] = stepsRes.data
-      const preRegisteredUsers: PreRegisteredUser[] = preRegisteredRes.data
+      const users: AdminUser[] = usersRes.data
+      const eligibleUsers = users.filter(user => user.role !== "ADMIN")
 
       setTotalVotes(total)
-      setPreRegisteredTotal(preRegisteredUsers.length)
-      setRegisteredTotal(preRegisteredUsers.filter(preUser => preUser.registered).length)
+      setEligibleUsersTotal(eligibleUsers.length)
       setVoteTimeline(timeline)
 
       const aggregated: StepResult[] = steps.map(step => {
@@ -441,32 +439,18 @@ export default function ResultsPage() {
                     { label: "Já votaram", count: totalVotes, color: "#9333ea" },
                     {
                       label: "Faltam votar",
-                      count: Math.max(preRegisteredTotal - totalVotes, 0),
+                      count: Math.max(eligibleUsersTotal - totalVotes, 0),
                       color: "#dc2626"
                     }
                   ]
                 )}
 
                 {renderSummaryChart(
-                  "Cadastro na plataforma",
-                  registeredTotal,
-                  "cadastrados",
-                  [
-                    { label: "Já efetuaram cadastro", count: registeredTotal, color: "#16a34a" },
-                    {
-                      label: "Ainda não se cadastraram",
-                      count: Math.max(preRegisteredTotal - registeredTotal, 0),
-                      color: "#ca8a04"
-                    }
-                  ]
-                )}
-
-                {renderSummaryChart(
-                  "Pré-cadastrados",
-                  preRegisteredTotal,
+                  "Usuários aptos",
+                  eligibleUsersTotal,
                   "pessoas",
                   [
-                    { label: "Pré-cadastrados", count: preRegisteredTotal, color: "#2563eb" }
+                    { label: "Aptos para login e votação", count: eligibleUsersTotal, color: "#2563eb" }
                   ]
                 )}
               </div>
