@@ -28,6 +28,12 @@ type AdminUser = {
   canChangePassword: boolean
 }
 
+type VoteReceipt = {
+  id: string
+  createdAt: string
+  votingId: string
+}
+
 const USER_PAGE_SIZE_OPTIONS = [10, 50, 100]
 
 export default function Dashboard() {
@@ -49,6 +55,7 @@ export default function Dashboard() {
   const [creatingUser, setCreatingUser] = useState(false)
   const [sendingInvitationUserId, setSendingInvitationUserId] = useState<string | null>(null)
   const [sendingAllInvitations, setSendingAllInvitations] = useState(false)
+  const [latestVote, setLatestVote] = useState<VoteReceipt | null>(null)
   const [loading, setLoading] = useState(true)
 
   const isVoter = user?.role === "VOTER"
@@ -77,6 +84,11 @@ export default function Dashboard() {
       setVotings(loadedVotings)
       setVotedIds(loadedVotedIds)
       setAdminUsers(usersRes.data)
+      setLatestVote(myVotesRes.data.latestVote || null)
+
+      if (user?.role === "VOTER" && loadedVotedIds.length > 0 && !myVotesRes.data.latestVote) {
+        loadLatestVote()
+      }
 
       if (user?.role === "VOTER") {
         const openAndNotVoted = loadedVotings.filter(
@@ -94,11 +106,32 @@ export default function Dashboard() {
     }
   }
 
+  async function loadLatestVote() {
+    try {
+      const response = await api.get("/votes/my-latest-vote")
+      setLatestVote(response.data.vote || null)
+    } catch {
+      setLatestVote(null)
+    }
+  }
+
   function formatDate(iso: string | null | undefined) {
     if (!iso) return null
     return new Date(iso).toLocaleString("pt-BR", {
       day: "2-digit", month: "2-digit", year: "numeric",
       hour: "2-digit", minute: "2-digit"
+    })
+  }
+
+  function formatVoteDate(iso: string | null | undefined) {
+    if (!iso) return null
+    return new Date(iso).toLocaleString("pt-BR", {
+      day: "2-digit",
+      month: "2-digit",
+      year: "numeric",
+      hour: "2-digit",
+      minute: "2-digit",
+      second: "2-digit"
     })
   }
 
@@ -263,6 +296,32 @@ export default function Dashboard() {
               <p className="text-xl font-medium leading-relaxed text-zinc-700 dark:text-zinc-300">
                 Acompanhe os resultados pela página do Sindicato.
               </p>
+
+              {latestVote && (
+                <div className="mx-auto mt-8 max-w-md rounded-lg border border-zinc-200 bg-white px-6 py-5 text-left shadow-sm dark:border-zinc-700 dark:bg-zinc-800">
+                  <p className="text-sm font-medium uppercase tracking-wide text-zinc-500 dark:text-zinc-400">
+                    Comprovante de registro
+                  </p>
+                  <dl className="mt-4 space-y-3 text-zinc-700 dark:text-zinc-200">
+                    <div>
+                      <dt className="text-sm font-semibold text-zinc-500 dark:text-zinc-400">
+                        Data e horário
+                      </dt>
+                      <dd className="text-lg font-bold">
+                        {formatVoteDate(latestVote.createdAt)}
+                      </dd>
+                    </div>
+                    <div>
+                      <dt className="text-sm font-semibold text-zinc-500 dark:text-zinc-400">
+                        Código identificador
+                      </dt>
+                      <dd className="text-lg font-bold tracking-wider">
+                        {latestVote.id.slice(0, 8).toUpperCase()}
+                      </dd>
+                    </div>
+                  </dl>
+                </div>
+              )}
             </div>
           </section>
         </main>

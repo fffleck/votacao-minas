@@ -134,8 +134,12 @@ export default function VotePage() {
     if (!validateCurrentStep()) return
     setSubmitting(true)
     try {
-      await api.post("/votes", { votingId: id, answers })
+      const response = await api.post("/votes", { votingId: id, answers })
       localStorage.removeItem(progressKey)
+      sessionStorage.setItem("last_vote_receipt", JSON.stringify({
+        voteId: response.data.id,
+        createdAt: response.data.createdAt
+      }))
       router.push("/vote/success")
     } catch (err: any) {
       alert(err.response?.data?.error || "Erro ao votar")
