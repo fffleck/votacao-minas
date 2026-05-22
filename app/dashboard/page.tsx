@@ -34,6 +34,8 @@ type VoteReceipt = {
   votingId: string
 }
 
+type VoteStatusFilter = "all" | "voted" | "not-voted"
+
 const USER_PAGE_SIZE_OPTIONS = [10, 50, 100]
 
 export default function Dashboard() {
@@ -44,6 +46,7 @@ export default function Dashboard() {
   const [adminUsers, setAdminUsers] = useState<AdminUser[]>([])
   const [userSearchEmail, setUserSearchEmail] = useState("")
   const [userSearchCpf, setUserSearchCpf] = useState("")
+  const [userVoteStatusFilter, setUserVoteStatusFilter] = useState<VoteStatusFilter>("all")
   const [userPage, setUserPage] = useState(1)
   const [userPageSize, setUserPageSize] = useState(10)
   const [editingUserId, setEditingUserId] = useState<string | null>(null)
@@ -67,7 +70,7 @@ export default function Dashboard() {
 
   useEffect(() => {
     setUserPage(1)
-  }, [userSearchEmail, userSearchCpf, userPageSize])
+  }, [userSearchEmail, userSearchCpf, userVoteStatusFilter, userPageSize])
 
   async function load() {
     setLoading(true)
@@ -246,10 +249,19 @@ export default function Dashboard() {
 
     setSendingAllInvitations(true)
     try {
-      const response = await api.post("/users/invitations/send-all")
-      alert(`Envio concluído: ${response.data.sent} enviados, ${response.data.failed} falharam.`)
+      const controller = new AbortController()
+      const timeout = window.setTimeout(() => controller.abort(), 10000)
+      const response = await api.post("/users/invitations/send-all", undefined, {
+        signal: controller.signal
+      })
+      window.clearTimeout(timeout)
+      alert(response.data.message || "Envio iniciado em segundo plano. Acompanhe os logs do servidor.")
     } catch (err: any) {
-      alert(err.response?.data?.error || "Erro ao enviar emails")
+      if (err.name === "CanceledError" || err.code === "ERR_CANCELED") {
+        alert("A solicitação demorou para responder. O botão foi liberado; verifique os logs do backend antes de tentar novamente.")
+      } else {
+        alert(err.response?.data?.error || "Erro ao iniciar envio de emails")
+      }
     } finally {
       setSendingAllInvitations(false)
     }
@@ -264,8 +276,12 @@ export default function Dashboard() {
     const cpfMatch = String(adminUser.cpf || "")
       .replace(/\D/g, "")
       .includes(userSearchCpf.replace(/\D/g, ""))
+    const voteStatusMatch =
+      userVoteStatusFilter === "all" ||
+      (userVoteStatusFilter === "voted" && adminUser.hasVoted) ||
+      (userVoteStatusFilter === "not-voted" && !adminUser.hasVoted)
 
-    return emailMatch && cpfMatch
+    return emailMatch && cpfMatch && voteStatusMatch
   })
   const userPageCount = Math.max(1, Math.ceil(filteredUsers.length / userPageSize))
   const currentUserPage = Math.min(userPage, userPageCount)
@@ -527,7 +543,7 @@ export default function Dashboard() {
                   </div>
                 </div>
 
-                <div className="mb-5 grid grid-cols-1 gap-3 rounded-lg border border-zinc-200 bg-zinc-50 p-4 dark:border-zinc-700 dark:bg-zinc-900 sm:grid-cols-2">
+                <div className="mb-5 grid grid-cols-1 gap-3 rounded-lg border border-zinc-200 bg-zinc-50 p-4 dark:border-zinc-700 dark:bg-zinc-900 sm:grid-cols-3">
                   <input
                     className="rounded-lg border border-zinc-300 bg-white p-2 text-zinc-900 dark:border-zinc-600 dark:bg-zinc-800 dark:text-zinc-100"
                     placeholder="Buscar por email"
@@ -541,7 +557,16 @@ export default function Dashboard() {
                     value={userSearchCpf}
                     onChange={e => setUserSearchCpf(formatCpf(e.target.value))}
                   />
-                  <div className="flex flex-col gap-3 text-sm text-zinc-500 dark:text-zinc-400 sm:col-span-2 sm:flex-row sm:items-center sm:justify-between">
+                  <select
+                    className="rounded-lg border border-zinc-300 bg-white p-2 text-zinc-900 dark:border-zinc-600 dark:bg-zinc-800 dark:text-zinc-100"
+                    value={userVoteStatusFilter}
+                    onChange={e => setUserVoteStatusFilter(e.target.value as VoteStatusFilter)}
+                  >
+                    <option value="all">Todos os usuários</option>
+                    <option value="voted">Já votou</option>
+                    <option value="not-voted">Não votou</option>
+                  </select>
+                  <div className="flex flex-col gap-3 text-sm text-zinc-500 dark:text-zinc-400 sm:col-span-3 sm:flex-row sm:items-center sm:justify-between">
                     <span>
                       Exibindo {paginatedUsers.length} de {filteredUsers.length} usuários encontrados.
                     </span>
