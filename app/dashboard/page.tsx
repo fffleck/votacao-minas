@@ -15,6 +15,9 @@ type Voting = {
   status: "open" | "closed" | "draft"
   startDate?: string | null
   endDate?: string | null
+  finalizedAt?: string | null
+  resultPdfUrl?: string | null
+  nonVotersPdfUrl?: string | null
 }
 
 type AdminUser = {
@@ -58,6 +61,7 @@ export default function Dashboard() {
   const [creatingUser, setCreatingUser] = useState(false)
   const [sendingInvitationUserId, setSendingInvitationUserId] = useState<string | null>(null)
   const [sendingAllInvitations, setSendingAllInvitations] = useState(false)
+  const [finalizingVotingId, setFinalizingVotingId] = useState<string | null>(null)
   const [latestVote, setLatestVote] = useState<VoteReceipt | null>(null)
   const [loading, setLoading] = useState(true)
 
@@ -178,6 +182,21 @@ export default function Dashboard() {
     }
   }
 
+  async function handleFinalize(id: string) {
+    if (!confirm("Deseja finalizar esta votação? Esta ação fecha a votação, impede novos votos e gera os PDFs finais.")) return
+
+    setFinalizingVotingId(id)
+    try {
+      await api.post(`/votings/${id}/finalize`)
+      alert("Votação finalizada e PDFs gerados com sucesso")
+      load()
+    } catch (err: any) {
+      alert(err.response?.data?.error || "Erro ao finalizar votação")
+    } finally {
+      setFinalizingVotingId(null)
+    }
+  }
+
   function startPasswordEdit(userId: string) {
     setEditingUserId(userId)
     setNewPassword("")
@@ -265,6 +284,13 @@ export default function Dashboard() {
     } finally {
       setSendingAllInvitations(false)
     }
+  }
+
+  function getDownloadUrl(url: string | null | undefined) {
+    if (!url) return null
+    if (url.startsWith("http")) return url
+    const apiBase = String(api.defaults.baseURL || "").replace(/\/api\/?$/, "")
+    return `${apiBase}${url}`
   }
 
   const openAndNotVoted = votings.filter(
@@ -412,6 +438,30 @@ export default function Dashboard() {
                             )}
                           </div>
                         )}
+                        {(v.resultPdfUrl || v.nonVotersPdfUrl) && (
+                          <div className="mt-3 flex flex-wrap gap-2">
+                            {getDownloadUrl(v.resultPdfUrl) && (
+                              <a
+                                href={getDownloadUrl(v.resultPdfUrl) || "#"}
+                                target="_blank"
+                                rel="noreferrer"
+                                className="rounded-lg border border-blue-200 bg-blue-50 px-3 py-1.5 text-sm font-medium text-blue-700 transition hover:bg-blue-100"
+                              >
+                                PDF Resultado final
+                              </a>
+                            )}
+                            {getDownloadUrl(v.nonVotersPdfUrl) && (
+                              <a
+                                href={getDownloadUrl(v.nonVotersPdfUrl) || "#"}
+                                target="_blank"
+                                rel="noreferrer"
+                                className="rounded-lg border border-zinc-200 bg-zinc-50 px-3 py-1.5 text-sm font-medium text-zinc-700 transition hover:bg-zinc-100 dark:border-zinc-600 dark:bg-zinc-700 dark:text-zinc-100 dark:hover:bg-zinc-600"
+                              >
+                                PDF Não votantes
+                              </a>
+                            )}
+                          </div>
+                        )}
                       </div>
 
                       <div className="flex flex-wrap gap-2">
@@ -458,6 +508,15 @@ export default function Dashboard() {
                                 className="rounded-lg bg-red-100 px-4 py-2 font-medium text-red-700 transition hover:bg-red-200"
                               >
                                 Fechar
+                              </button>
+                            )}
+                            {(v.status === "open" || v.status === "closed") && (
+                              <button
+                                onClick={() => handleFinalize(v.id)}
+                                disabled={finalizingVotingId === v.id}
+                                className="rounded-lg bg-zinc-900 px-4 py-2 font-medium text-white transition hover:bg-zinc-700 disabled:cursor-not-allowed disabled:opacity-60 dark:bg-zinc-100 dark:text-zinc-900 dark:hover:bg-zinc-300"
+                              >
+                                {finalizingVotingId === v.id ? "Finalizando..." : "FINALIZAR"}
                               </button>
                             )}
                           </>
