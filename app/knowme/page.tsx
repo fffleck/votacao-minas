@@ -4,31 +4,45 @@ import { useRouter } from "next/navigation"
 import { useEffect, useState } from "react"
 
 const members = [
-  { name: "Lina Rocha", image: "lina.jpeg", x: 18.5, y: 25.5 },
-  { name: "Pablo Friche", image: "pablo.jpeg", x: 40.5, y: 25.5 },
-  { name: "Alessandra Costa", image: "alessandra.jpeg", x: 62.5, y: 25.5 },
-  { name: "Rafael Motta", image: "rafael.jpeg", x: 84, y: 25.5 },
-  { name: "Marcia Bueno", image: "marcia.jpeg", x: 18.5, y: 41.2 },
-  { name: "Breno Araújo", image: "breno.jpeg", x: 40.5, y: 41.2 },
-  { name: "Debora Lopes", image: "debora.jpeg", x: 62.5, y: 41.2 },
-  { name: "Bruno Mateus", image: "bruno_mateus.jpeg", x: 84, y: 41.2 },
-  { name: "Sandra Mara", image: "sandra.jpeg", x: 18.5, y: 57 },
-  { name: "Bruno Daniel", image: "bruno_daniel.jpeg", x: 40.5, y: 57 },
-  { name: "Jayme Costa", image: "jayme.jpeg", x: 62.5, y: 57 },
-  { name: "Esley Amorim", image: "esley.jpeg", x: 84, y: 57 },
-  { name: "Vanessa Santos", image: "vanessa.jpeg", x: 18.5, y: 72.8 },
-  { name: "Ivan Fernandes", image: "ivan.jpeg", x: 40.5, y: 72.8 },
-  { name: "Eduardo Elias", image: "eduardo.jpeg", x: 62.5, y: 72.8 },
-  { name: "Larissa Vilela", image: "larissa.jpeg", x: 84, y: 72.8 },
-  { name: "Matheus Queiroz", image: "matheus.jpeg", x: 18.5, y: 88.4 },
-  { name: "Thiago Silva", image: "thiago.jpeg", x: 40.5, y: 88.4 },
-  { name: "Andrea Santos", image: "andrea.jpeg", x: 62.5, y: 88.4 },
-  { name: "Rogerio Afonso", image: "rogerio.jpeg", x: 84, y: 88.4 }
+  { name: "Janine Koneski de Abreu", image: "01-janine_koneski_de_abreu.png", x: 13.6, y: 25.4 },
+  { name: "Celso Vicenzi", image: "02_celso_vicenzi.png", x: 31.5, y: 25.4 },
+  { name: "Cristina De Marco", image: "03_cristina_de_marco.png", x: 49.5, y: 25.4 },
+  { name: "Adriana Baldissarelli", image: "04_adriana_baldissarelli.png", x: 68.5, y: 25.4 },
+  { name: "Cárlida Emerim", image: "05_carlida_emerim.png", x: 86.4, y: 25.4 },
+  { name: "Magali Moser", image: "06_magali_moser.png", x: 13.6, y: 37.3 },
+  { name: "Hilton Maurente", image: "07_hilton_maurente.png", x: 31.5, y: 37.3 },
+  { name: "Silvia Agostini", image: "08_silvia_agostini.png", x: 49.5, y: 37.3 },
+  { name: "Andrieli Trindade", image: "09_andrieli_trindade.png", x: 68.5, y: 37.3 },
+  { name: "Gilvan de França", image: "10_gilvan_de_franca.png", x: 86.4, y: 37.3 },
+  { name: "Rita Paulino", image: "11_rita_paulino.png", x: 13.6, y: 48.7 },
+  { name: "Fernando Evangelista", image: "12_fernando_evangelista.png", x: 31.5, y: 48.7 },
+  { name: "Josemar Sehnem", image: "13_josemar_sehnem.png", x: 49.5, y: 48.7 },
+  { name: "Marli Vitali", image: "14_marli_vitali.png", x: 68.5, y: 48.7 },
+  { name: "Rogério Christofoletti", image: "15_rogerio_christofoletti.png", x: 86.4, y: 48.7 },
+  { name: "Ivan Giacomelli", image: "16_ivan_giacomelli.png", x: 13.6, y: 60.1 },
+  { name: "Gastão Cassel", image: "17_gastao_cassel.png", x: 31.5, y: 60.1 },
+  { name: "Schirlei Alves", image: "18_schirlei_alves.png", x: 49.5, y: 60.1 },
+  { name: "Marcelo Siqueira", image: "19_marcelo_siqueira.png", x: 68.5, y: 60.1 },
+  { name: "Cláudia Weimann", image: "20_claudia_weimann.png", x: 86.4, y: 60.1 },
+  { name: "Fábia Hafermann", image: "21_fabia_hafermann.png", x: 13.6, y: 71.5 },
+  { name: "Fábio Bispo", image: "22_fabio_bispo.png", x: 31.5, y: 71.5 },
+  { name: "Carlos Henrique Braga", image: "23_carlos_henrique_braga.png", x: 49.5, y: 71.5 },
+  { name: "Mylene Margarida", image: "24_mylene_margarida.png", x: 68.5, y: 71.5 },
+  { name: "Alexandre Gonçalves", image: "25_alexandre_goncalves.png", x: 86.4, y: 71.5 },
+  { name: "Jairo Cardoso", image: "26_jairo_cardoso.png", x: 13.6, y: 82.9 },
+  { name: "Bruno Cruz", image: "27_bruno_cruz.png", x: 31.5, y: 82.9 },
+  { name: "Linete Martins", image: "28_linete_martins.png", x: 49.5, y: 82.9 },
+  { name: "Roseméri Laurindo", image: "29_rosemeri_laurindo.png", x: 68.5, y: 82.9 },
+  { name: "Valci Zuculoto", image: "30_valci_zuculoto.png", x: 86.4, y: 82.9 },
+  { name: "Valmor Fritsche", image: "31_valmor_fritsche.png", x: 13.6, y: 94.0 },
+  { name: "Ricardo Medeiros", image: "32_ricardo_medeiros.png", x: 31.5, y: 94.0 },
+  { name: "Sérgio Vignes", image: "33_sergio_vignes.png", x: 49.5, y: 94.0 },
+  { name: "Maria José Baldessar", image: "34_maria_jose_baldessar.png", x: 68.5, y: 94.0 },
+  { name: "Lourdes Sedlacek", image: "35_lourdes_sedlacek.png", x: 86.4, y: 94.0 }
 ]
 
 export default function KnowMePage() {
   const router = useRouter()
-  const [activeTab, setActiveTab] = useState<"proposta" | "chapa">("chapa")
   const [selectedMember, setSelectedMember] = useState<(typeof members)[number] | null>(null)
 
   useEffect(() => {
@@ -63,97 +77,29 @@ export default function KnowMePage() {
           Conheça a chapa
         </h1>
 
-        <div className="mx-auto mb-8 flex max-w-3xl rounded-lg border border-zinc-200 bg-white p-1 shadow-sm dark:border-zinc-700 dark:bg-zinc-800">
-          <button
-            type="button"
-            onClick={() => setActiveTab("chapa")}
-            className={`flex-1 rounded-md px-4 py-3 text-sm font-semibold transition ${
-              activeTab === "chapa"
-                ? "bg-blue-600 text-white shadow"
-                : "text-zinc-600 hover:bg-zinc-100 dark:text-zinc-300 dark:hover:bg-zinc-700"
-            }`}
-          >
-            Integrantes
-          </button>
-          <button
-            type="button"
-            onClick={() => setActiveTab("proposta")}
-            className={`flex-1 rounded-md px-4 py-3 text-sm font-semibold transition ${
-              activeTab === "proposta"
-                ? "bg-blue-600 text-white shadow"
-                : "text-zinc-600 hover:bg-zinc-100 dark:text-zinc-300 dark:hover:bg-zinc-700"
-            }`}
-          >
-            Nossa Proposta
-          </button>
+        <p className="mb-5 text-center text-sm font-medium text-zinc-600 dark:text-zinc-300">
+          Clique na foto de cada integrante para ver mais informações.
+        </p>
+
+        <div className="relative mx-auto max-w-3xl">
+          <img
+            src="/assets/todos.jpeg"
+            alt="Chapa 1 - Conexão, Valor e Movimento"
+            className="w-full rounded-lg border border-zinc-200 bg-white object-contain shadow-sm dark:border-zinc-700 dark:bg-zinc-800"
+          />
+
+          {members.map(member => (
+            <button
+              key={member.image}
+              type="button"
+              aria-label={`Abrir detalhes de ${member.name}`}
+              title={member.name}
+              onClick={() => setSelectedMember(member)}
+              className="absolute aspect-square w-[15%] -translate-x-1/2 -translate-y-1/2 rounded-full border-2 border-transparent transition hover:border-blue-500 hover:bg-blue-500/10 focus:border-blue-600 focus:bg-blue-500/10 focus:outline-none focus:ring-4 focus:ring-blue-500/30"
+              style={{ left: `${member.x}%`, top: `${member.y}%` }}
+            />
+          ))}
         </div>
-
-        {activeTab === "chapa" && (
-          <>
-            <p className="mb-5 text-center text-sm font-medium text-zinc-600 dark:text-zinc-300">
-              Clique na foto de cada integrante para ver mais informações.
-            </p>
-
-            <div className="relative mx-auto max-w-3xl">
-              <img
-                src="/assets/todos.jpeg"
-                alt="Chapa Resistência Jornalista"
-                className="w-full rounded-lg border border-zinc-200 bg-white object-contain shadow-sm dark:border-zinc-700 dark:bg-zinc-800"
-              />
-
-              {members.map(member => (
-                <button
-                  key={member.image}
-                  type="button"
-                  aria-label={`Abrir detalhes de ${member.name}`}
-                  title={member.name}
-                  onClick={() => setSelectedMember(member)}
-                  className="absolute aspect-square w-[18%] -translate-x-1/2 -translate-y-1/2 rounded-full border-2 border-transparent transition hover:border-blue-500 hover:bg-blue-500/10 focus:border-blue-600 focus:bg-blue-500/10 focus:outline-none focus:ring-4 focus:ring-blue-500/30"
-                  style={{ left: `${member.x}%`, top: `${member.y}%` }}
-                />
-              ))}
-            </div>
-          </>
-        )}
-
-        {activeTab === "proposta" && (
-        <div className="mx-auto max-w-3xl space-y-4 rounded-lg border border-zinc-200 bg-white p-6 text-base leading-relaxed text-zinc-700 shadow-sm dark:border-zinc-700 dark:bg-zinc-800 dark:text-zinc-200">
-          <h2 className="text-center text-2xl font-bold tracking-tight text-zinc-900 dark:text-zinc-100">
-            Nossa Proposta
-          </h2>
-
-          <p>
-            A chapa “Resistência, jornalista” se apresenta para dar continuidade à atual gestão do Sindicato dos Jornalistas Profissionais de Minas Gerais, reafirmando o compromisso histórico com a defesa da categoria, da profissão e da liberdade de imprensa. Em um cenário marcado pelo avanço da desinformação, pelas ameaças ao Estado Democrático de Direito, pela precarização das relações de trabalho e pelos ataques constantes aos direitos trabalhistas, entendemos que nunca foi tão necessário fortalecer a organização coletiva das e dos jornalistas.
-          </p>
-          <p>
-            Nos últimos anos, atuamos para manter o Sindicato vivo política e financeiramente, garantindo sua capacidade de intervenção diante dos desafios enfrentados pela categoria. Agora, com um novo estatuto da entidade e uma chapa renovada pela chegada de novas militâncias e experiências profissionais, queremos seguir na linha de frente da luta em defesa do jornalismo e das condições dignas de trabalho.
-          </p>
-          <p>
-            Defendemos um sindicato ativo, presente e articulado com os movimentos sociais, populares e sindicais, capaz de enfrentar os impactos das novas tecnologias, da plataformização e dos modelos cada vez mais precários de contratação. Também seguimos comprometidos com o combate às fake news, à violência contra jornalistas e ao assédio jurídico utilizado como instrumento de intimidação contra profissionais da imprensa.
-          </p>
-          <p>
-            Entre nossas prioridades está a defesa da PEC do Diploma, entendida como uma medida fundamental para a valorização da profissão e da formação jornalística. Também manteremos a mobilização em defesa da comunicação pública em Minas Gerais, denunciando ataques e desmontes que atingem veículos fundamentais, como a Rádio Inconfidência e a TV Minas.
-          </p>
-          <p>
-            No campo trabalhista, seguiremos atuando nas negociações coletivas, nas campanhas salariais e na defesa dos direitos da categoria diante das empresas de comunicação e demais empregadores. Queremos ampliar a orientação sindical, fortalecer mobilizações e aprofundar o debate sobre pejotização, MEIs e outras formas precárias de contratação que fragilizam vínculos empregatícios e retiram direitos históricos das e dos jornalistas.
-          </p>
-          <p>
-            Nossa atuação também passa pelo enfrentamento ao assédio moral e sexual nos ambientes de trabalho, assim como pelo combate ao racismo, à lgbtfobia e a todas as formas de discriminação presentes nas redações, assessorias, agências e demais espaços profissionais. Defendemos um jornalismo comprometido com a diversidade, com a democracia e com os direitos humanos.
-          </p>
-          <p>
-            A formação política e profissional seguirá como eixo estratégico da nossa atuação. Pretendemos promover cursos de qualificação, retomar o Congresso Estadual dos Jornalistas e o ENJAC, além de reconstruir iniciativas importantes para a categoria, como o Prêmio Délio Rocha. Também queremos fortalecer debates sobre precarização do trabalho, contrarreformas, antirracismo, feminismo classista, democratização da comunicação e direitos sociais.
-          </p>
-          <p>
-            Outro compromisso central da chapa é fortalecer o Sindicato enquanto espaço de convivência, organização e mobilização da categoria. Queremos ampliar o número de sindicalizações, revitalizar a Casa dos Jornalistas, movimentar o espaço físico da entidade com cursos, debates e atividades culturais, além de estreitar o diálogo com universidades e cursos de Jornalismo.
-          </p>
-          <p>
-            Também entendemos que é fundamental aproximar ainda mais o Sindicato das jornalistas e dos jornalistas do interior de Minas Gerais, ampliando visitas, debates e ações regionais, para que a entidade esteja conectada às diferentes realidades da profissão em todo o estado.
-          </p>
-          <p>
-            A chapa “Resistência, jornalista” acredita na força da organização coletiva e na importância de um sindicato combativo, democrático e presente na vida da categoria. Seguiremos resistindo aos ataques à profissão, defendendo direitos, valorizando o jornalismo e fortalecendo a luta por uma sociedade mais democrática, justa e comprometida com a informação de qualidade.
-          </p>
-        </div>
-        )}
       </section>
 
       {selectedMember && (

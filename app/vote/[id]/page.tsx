@@ -7,9 +7,9 @@ import { api } from "@/services/api"
 import RequireAuth from "@/components/RequireAuth"
 import { AuthContext } from "@/contexts/AuthContext"
 
-const IMAGE_BASE = "http://localhost:3333"
+const IMAGE_BASE = (process.env.NEXT_PUBLIC_API_URL || "").replace(/\/api\/?$/, "")
 
-type Option = { id: string; label: string; imageUrl?: string }
+type Option = { id: string; label: string; imageUrl?: string; hideLabel?: boolean }
 type Step = {
   id: string
   title: string
@@ -165,7 +165,7 @@ export default function VotePage() {
     if (normalizedLabel === "sim") return { src: "/assets/positivo.png", isSpecial: true }
     if (normalizedLabel === "nao") return { src: "/assets/negativo.png", isSpecial: true }
     if (normalizedLabel === "branco / nulo" || normalizedLabel === "branco/nulo") {
-      return { src: "/assets/nulo.jpeg", isSpecial: true }
+      return { src: "/assets/nulo.png", isSpecial: true }
     }
 
     return option.imageUrl ? { src: `${IMAGE_BASE}${option.imageUrl}`, isSpecial: false } : null
@@ -317,9 +317,11 @@ export default function VotePage() {
                     )}
 
                     {/* Título centralizado */}
-                    <span className="text-sm font-medium text-zinc-800 dark:text-zinc-100 text-center leading-tight">
-                      {opt.label}
-                    </span>
+                    {!opt.hideLabel && (
+                      <span className="text-sm font-medium text-zinc-800 dark:text-zinc-100 text-center leading-tight">
+                        {opt.label}
+                      </span>
+                    )}
 
                     {isSelected && (
                       <span className="text-xs font-bold text-blue-600 dark:text-blue-400">✓ Selecionado</span>

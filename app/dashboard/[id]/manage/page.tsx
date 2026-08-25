@@ -26,6 +26,7 @@ export default function ManageVotingPage() {
   const [maxSelect, setMaxSelect] = useState(1)
 
   const [optionTitle, setOptionTitle] = useState("")
+  const [optionHideLabel, setOptionHideLabel] = useState(false)
   const [selectedStep, setSelectedStep] = useState<string | null>(null)
   const [optionImageFile, setOptionImageFile] = useState<File | null>(null)
   const [optionImagePreview, setOptionImagePreview] = useState<string | null>(null)
@@ -157,8 +158,9 @@ export default function ManageVotingPage() {
         const url = await uploadImage(optionImageFile)
         if (url) imageUrl = url
       }
-      await api.post("/voting-steps/option", { stepId: selectedStep, label: optionTitle, imageUrl })
+      await api.post("/voting-steps/option", { stepId: selectedStep, label: optionTitle, imageUrl, hideLabel: optionHideLabel })
       setOptionTitle("")
+      setOptionHideLabel(false)
       setOptionImageFile(null)
       setOptionImagePreview(null)
       loadSteps()
@@ -374,6 +376,16 @@ export default function ManageVotingPage() {
                 )}
               </div>
 
+              <label className="flex items-center gap-2 text-sm text-zinc-600 dark:text-zinc-300 cursor-pointer">
+                <input
+                  type="checkbox"
+                  checked={optionHideLabel}
+                  onChange={e => setOptionHideLabel(e.target.checked)}
+                  className="h-4 w-4 rounded border-zinc-300 dark:border-zinc-600"
+                />
+                Mostrar somente a imagem para o eleitor (ocultar o título)
+              </label>
+
               <button
                 onClick={handleAddOption}
                 className="w-full bg-blue-600 hover:bg-blue-700 text-white px-5 py-2 rounded-lg font-semibold shadow transition disabled:opacity-50 sm:w-auto sm:self-end"
@@ -444,6 +456,11 @@ export default function ManageVotingPage() {
                             )}
                             <span className="min-w-0 break-words text-sm font-medium text-blue-800 dark:text-blue-200">
                               {o.label}
+                              {o.hideLabel && (
+                                <span className="ml-1 text-xs font-normal text-blue-500 dark:text-blue-300">
+                                  (somente imagem)
+                                </span>
+                              )}
                             </span>
                             <button
                               onClick={async () => {
