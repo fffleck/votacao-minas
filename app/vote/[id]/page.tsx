@@ -164,7 +164,11 @@ export default function VotePage() {
 
     if (normalizedLabel === "sim") return { src: "/assets/positivo.png", isSpecial: true }
     if (normalizedLabel === "nao") return { src: "/assets/negativo.png", isSpecial: true }
-    if (normalizedLabel === "branco / nulo" || normalizedLabel === "branco/nulo") {
+    if (
+      normalizedLabel === "nulo" ||
+      normalizedLabel === "branco / nulo" ||
+      normalizedLabel === "branco/nulo"
+    ) {
       return { src: "/assets/nulo.png", isSpecial: true }
     }
 
