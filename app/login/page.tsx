@@ -124,7 +124,7 @@ export default function LoginPage() {
             </div>
 
             <video
-              src="/videos/processo-votacao.webm"
+              src="/videos/tutorial-votacao-sc.webm"
               className="aspect-video w-full bg-black"
               controls
               autoPlay
