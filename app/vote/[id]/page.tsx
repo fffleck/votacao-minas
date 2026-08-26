@@ -36,12 +36,22 @@ export default function VotePage() {
   const [completedStepIds, setCompletedStepIds] = useState<string[]>([])
   const [loading, setLoading] = useState(true)
   const [submitting, setSubmitting] = useState(false)
+  const [zoomedOption, setZoomedOption] = useState<Option | null>(null)
 
   const progressKey = `vote_progress_${id}_${user?.id}`
 
   useEffect(() => {
     if (user) loadData()
   }, [user])
+
+  useEffect(() => {
+    function closeOnEscape(event: KeyboardEvent) {
+      if (event.key === "Escape") setZoomedOption(null)
+    }
+
+    window.addEventListener("keydown", closeOnEscape)
+    return () => window.removeEventListener("keydown", closeOnEscape)
+  }, [])
 
   async function loadData() {
     try {
@@ -286,16 +296,26 @@ export default function VotePage() {
                     : (answers[currentStep.id] as string[])?.includes(opt.id)
                 const optionImage = getOptionImage(opt)
 
+                function selectOption() {
+                  currentStep.type === "single"
+                    ? handleSingleSelect(currentStep.id, opt.id)
+                    : handleMultiToggle(currentStep.id, opt.id)
+                }
+
                 return (
-                  <button
+                  <div
                     key={opt.id}
-                    type="button"
-                    onClick={() =>
-                      currentStep.type === "single"
-                        ? handleSingleSelect(currentStep.id, opt.id)
-                        : handleMultiToggle(currentStep.id, opt.id)
-                    }
-                    className={`flex items-center rounded-xl border-2 p-3 transition focus:outline-none ${
+                    role="button"
+                    tabIndex={0}
+                    aria-pressed={isSelected}
+                    onClick={selectOption}
+                    onKeyDown={event => {
+                      if (event.key === "Enter" || event.key === " ") {
+                        event.preventDefault()
+                        selectOption()
+                      }
+                    }}
+                    className={`flex cursor-pointer items-center rounded-xl border-2 p-3 transition focus:outline-none ${
                       optionImage?.isSpecial ? "min-h-24 flex-row justify-center gap-4" : "flex-col gap-2"
                     } ${
                       isSelected
@@ -311,12 +331,26 @@ export default function VotePage() {
                         className="h-12 w-12 object-contain"
                       />
                     ) : optionImage ? (
-                      <div className="flex aspect-square w-full items-center justify-center rounded-lg bg-zinc-100 dark:bg-zinc-700">
+                      <div className="relative flex aspect-square w-full items-center justify-center rounded-lg bg-zinc-100 dark:bg-zinc-700">
                         <img
                           src={optionImage.src}
                           alt={opt.label}
                           className="h-full w-full object-contain rounded-lg"
                         />
+                        <button
+                          type="button"
+                          aria-label={`Ver foto ampliada de ${opt.label}`}
+                          title="Ver foto ampliada"
+                          onClick={event => {
+                            event.stopPropagation()
+                            setZoomedOption(opt)
+                          }}
+                          className="absolute right-1.5 top-1.5 rounded-full bg-black/60 p-1.5 text-white transition hover:bg-black/80"
+                        >
+                          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" className="h-4 w-4">
+                            <path fillRule="evenodd" d="M9 3.5a5.5 5.5 0 1 0 3.61 9.65l3.87 3.87a.75.75 0 1 0 1.06-1.06l-3.87-3.87A5.5 5.5 0 0 0 9 3.5ZM5 9a4 4 0 1 1 8 0 4 4 0 0 1-8 0Z" clipRule="evenodd" />
+                          </svg>
+                        </button>
                       </div>
                     ) : (
                       <div className="w-full aspect-square bg-zinc-100 dark:bg-zinc-700 rounded-lg flex items-center justify-center text-zinc-400 text-xs">
@@ -334,7 +368,7 @@ export default function VotePage() {
                     {isSelected && (
                       <span className="text-xs font-bold text-blue-600 dark:text-blue-400">✓ Selecionado</span>
                     )}
-                  </button>
+                  </div>
                 )
               })}
             </div>
@@ -370,6 +404,42 @@ export default function VotePage() {
 
         </div>
       </div>
+
+      {zoomedOption && (
+        <div
+          className="fixed inset-0 z-50 flex items-center justify-center bg-black/70 p-4"
+          role="dialog"
+          aria-modal="true"
+          aria-label={`Foto ampliada de ${zoomedOption.label}`}
+          onClick={() => setZoomedOption(null)}
+        >
+          <div
+            className="relative max-h-[92vh] w-full max-w-[39.2rem] overflow-hidden rounded-xl bg-white shadow-2xl dark:bg-zinc-900"
+            onClick={event => event.stopPropagation()}
+          >
+            <button
+              type="button"
+              onClick={() => setZoomedOption(null)}
+              className="absolute right-3 top-3 z-10 rounded-full bg-black/70 px-3 py-1 text-lg font-bold leading-none text-white transition hover:bg-black"
+              aria-label="Fechar"
+            >
+              ×
+            </button>
+
+            <img
+              src={getOptionImage(zoomedOption)?.src}
+              alt={zoomedOption.label}
+              className="max-h-[92vh] w-full object-contain"
+            />
+
+            {!zoomedOption.hideLabel && (
+              <p className="p-4 text-center text-lg font-semibold text-zinc-900 dark:text-zinc-100">
+                {zoomedOption.label}
+              </p>
+            )}
+          </div>
+        </div>
+      )}
     </RequireAuth>
   )
 }
