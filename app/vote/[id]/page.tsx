@@ -110,7 +110,9 @@ export default function VotePage() {
   function validateCurrentStep(): boolean {
     const step = steps[currentStepIndex]
     const ans = answers[step.id]
-    if (!ans || (Array.isArray(ans) && ans.length === 0) || ans === "") {
+    const selectedCount = Array.isArray(ans) ? ans.length : ans ? 1 : 0
+
+    if (step.minSelect > 0 && selectedCount === 0) {
       alert(`Responda a etapa: "${step.title}"`)
       return false
     }

@@ -295,9 +295,9 @@ export default function ManageVotingPage() {
               </select>
               <input
                 type="number"
-                min={1}
+                min={0}
                 className="min-w-0 border border-zinc-300 dark:border-zinc-600 bg-zinc-50 dark:bg-zinc-900 p-2 rounded text-zinc-900 dark:text-zinc-100"
-                placeholder="Mínimo"
+                placeholder="Mínimo (0 = opcional)"
                 value={minSelect}
                 onChange={e => setMinSelect(Number(e.target.value))}
               />
