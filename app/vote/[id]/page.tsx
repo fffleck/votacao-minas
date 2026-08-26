@@ -249,25 +249,29 @@ export default function VotePage() {
             <h2 className="font-semibold text-xl text-zinc-900 dark:text-zinc-100 mb-1">
               {currentStep.title}
             </h2>
-            <div className="mb-6 flex flex-col gap-3 sm:flex-row sm:items-center">
-              <p className="text-sm font-medium text-zinc-600 dark:text-zinc-300">
-                Antes de executar seu voto, conheça a chapa
-              </p>
-              <Link
-                href="/knowme"
-                className="inline-flex w-fit items-center justify-center rounded-lg bg-blue-600 px-4 py-2 text-sm font-semibold text-white shadow transition hover:bg-blue-700"
-              >
-                Conhecer chapa
-              </Link>
-            </div>
+            {currentStepIndex === 0 && (
+              <>
+                <div className="mb-6 flex flex-col gap-3 sm:flex-row sm:items-center">
+                  <p className="text-sm font-medium text-zinc-600 dark:text-zinc-300">
+                    Antes de executar seu voto, conheça a chapa
+                  </p>
+                  <Link
+                    href="/knowme"
+                    className="inline-flex w-fit items-center justify-center rounded-lg bg-blue-600 px-4 py-2 text-sm font-semibold text-white shadow transition hover:bg-blue-700"
+                  >
+                    Conhecer chapa
+                  </Link>
+                </div>
 
-            <div className="mb-6 flex justify-center">
-              <img
-                src="/assets/logo_chapa.png"
-                alt="Logo da chapa"
-                className="w-full max-w-md object-contain"
-              />
-            </div>
+                <div className="mb-6 flex justify-center">
+                  <img
+                    src="/assets/logo_chapa.png"
+                    alt="Logo da chapa"
+                    className="w-full max-w-md object-contain"
+                  />
+                </div>
+              </>
+            )}
 
             {/* Grid de opções — máx 4 colunas */}
             <div className={`grid gap-4 ${
