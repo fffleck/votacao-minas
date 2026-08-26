@@ -6,7 +6,7 @@ import { api } from "@/services/api"
 import RequireAuth from "@/components/RequireAuth"
 import axios from "axios"
 
-const IMAGE_BASE = "http://localhost:3000"
+const IMAGE_BASE = (process.env.NEXT_PUBLIC_API_URL || "").replace(/\/api\/?$/, "")
 
 type VotingStatus = "draft" | "open" | "closed"
 
