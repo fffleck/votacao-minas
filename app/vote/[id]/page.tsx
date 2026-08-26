@@ -261,6 +261,13 @@ export default function VotePage() {
             <h2 className="font-semibold text-xl text-zinc-900 dark:text-zinc-100 mb-1">
               {currentStep.title}
             </h2>
+            {currentStep.type === "multiple" && (
+              <p className="mb-4 text-sm font-medium text-zinc-500 dark:text-zinc-400">
+                {currentStep.minSelect === 0
+                  ? `Você pode selecionar até ${currentStep.maxSelect} candidatos, ou não selecionar nenhum.`
+                  : `Selecione entre ${currentStep.minSelect} e ${currentStep.maxSelect} opções.`}
+              </p>
+            )}
             {currentStepIndex === 0 && (
               <>
                 <div className="mb-6 flex flex-col gap-3 sm:flex-row sm:items-center">
