@@ -54,6 +54,11 @@ export default function Dashboard() {
   const [userPageSize, setUserPageSize] = useState(10)
   const [editingUserId, setEditingUserId] = useState<string | null>(null)
   const [newPassword, setNewPassword] = useState("")
+  const [editingDataUserId, setEditingDataUserId] = useState<string | null>(null)
+  const [editUserName, setEditUserName] = useState("")
+  const [editUserEmail, setEditUserEmail] = useState("")
+  const [editUserCpf, setEditUserCpf] = useState("")
+  const [savingUserData, setSavingUserData] = useState(false)
   const [newUserName, setNewUserName] = useState("")
   const [newUserEmail, setNewUserEmail] = useState("")
   const [newUserCpf, setNewUserCpf] = useState("")
@@ -205,6 +210,42 @@ export default function Dashboard() {
   function cancelPasswordEdit() {
     setEditingUserId(null)
     setNewPassword("")
+  }
+
+  function startDataEdit(adminUser: AdminUser) {
+    setEditingDataUserId(adminUser.id)
+    setEditUserName(adminUser.name)
+    setEditUserEmail(adminUser.email)
+    setEditUserCpf(adminUser.cpf || "")
+  }
+
+  function cancelDataEdit() {
+    setEditingDataUserId(null)
+    setEditUserName("")
+    setEditUserEmail("")
+    setEditUserCpf("")
+  }
+
+  async function handleSaveUserData(userId: string) {
+    if (!editUserName.trim()) return alert("Informe o nome")
+    if (!editUserEmail.trim().includes("@")) return alert("Informe um email válido")
+    if (editUserCpf && editUserCpf.replace(/\D/g, "").length !== 11) return alert("Informe um CPF válido")
+
+    setSavingUserData(true)
+    try {
+      await api.patch(`/users/${userId}`, {
+        name: editUserName,
+        email: editUserEmail,
+        ...(editUserCpf ? { cpf: editUserCpf } : {})
+      })
+      alert("Dados atualizados com sucesso")
+      cancelDataEdit()
+      load()
+    } catch (err: any) {
+      alert(err.response?.data?.error || "Erro ao atualizar dados")
+    } finally {
+      setSavingUserData(false)
+    }
   }
 
   function resetNewUserForm() {
@@ -665,6 +706,7 @@ export default function Dashboard() {
                             <th className="py-3 pr-3">CPF</th>
                             <th className="py-3 pr-3">Perfil</th>
                             <th className="py-3 pr-3">Voto</th>
+                            <th className="py-3 pr-3">Dados</th>
                             <th className="py-3 pr-3">Email</th>
                             <th className="py-3 text-right">Senha</th>
                           </tr>
@@ -677,13 +719,38 @@ export default function Dashboard() {
                             return (
                             <tr key={adminUser.id} className="border-b border-zinc-100 dark:border-zinc-700">
                               <td className="py-3 pr-3 font-medium text-zinc-900 dark:text-zinc-100">
-                                {adminUser.name}
+                                {editingDataUserId === adminUser.id ? (
+                                  <input
+                                    className="w-full min-w-[10rem] rounded-lg border border-zinc-300 bg-white p-1.5 text-zinc-900 dark:border-zinc-600 dark:bg-zinc-900 dark:text-zinc-100"
+                                    value={editUserName}
+                                    onChange={e => setEditUserName(e.target.value)}
+                                  />
+                                ) : (
+                                  adminUser.name
+                                )}
                               </td>
                               <td className="py-3 pr-3 text-zinc-600 dark:text-zinc-300">
-                                {adminUser.email}
+                                {editingDataUserId === adminUser.id ? (
+                                  <input
+                                    className="w-full min-w-[12rem] rounded-lg border border-zinc-300 bg-white p-1.5 text-zinc-900 dark:border-zinc-600 dark:bg-zinc-900 dark:text-zinc-100"
+                                    value={editUserEmail}
+                                    onChange={e => setEditUserEmail(e.target.value)}
+                                  />
+                                ) : (
+                                  adminUser.email
+                                )}
                               </td>
                               <td className="py-3 pr-3 text-zinc-600 dark:text-zinc-300">
-                                {adminUser.cpf ? formatCpf(adminUser.cpf) : "-"}
+                                {editingDataUserId === adminUser.id ? (
+                                  <input
+                                    className="w-full min-w-[9rem] rounded-lg border border-zinc-300 bg-white p-1.5 text-zinc-900 dark:border-zinc-600 dark:bg-zinc-900 dark:text-zinc-100"
+                                    placeholder="Somente números"
+                                    value={editUserCpf}
+                                    onChange={e => setEditUserCpf(e.target.value)}
+                                  />
+                                ) : (
+                                  adminUser.cpf ? formatCpf(adminUser.cpf) : "-"
+                                )}
                               </td>
                               <td className="py-3 pr-3">
                                 <span className="rounded-full bg-zinc-100 px-2 py-1 text-xs font-bold text-zinc-600 dark:bg-zinc-700 dark:text-zinc-300">
@@ -698,6 +765,35 @@ export default function Dashboard() {
                                 }`}>
                                   {adminUser.hasVoted ? "Já votou" : "Não votou"}
                                 </span>
+                              </td>
+                              <td className="py-3 pr-3">
+                                {editingDataUserId === adminUser.id ? (
+                                  <div className="flex gap-2">
+                                    <button
+                                      type="button"
+                                      onClick={() => handleSaveUserData(adminUser.id)}
+                                      disabled={savingUserData}
+                                      className="font-medium text-blue-600 hover:underline disabled:opacity-50"
+                                    >
+                                      {savingUserData ? "Salvando..." : "Salvar"}
+                                    </button>
+                                    <button
+                                      type="button"
+                                      onClick={cancelDataEdit}
+                                      className="font-medium text-zinc-500 hover:underline"
+                                    >
+                                      Cancelar
+                                    </button>
+                                  </div>
+                                ) : (
+                                  <button
+                                    type="button"
+                                    onClick={() => startDataEdit(adminUser)}
+                                    className="font-medium text-blue-600 hover:underline"
+                                  >
+                                    Editar
+                                  </button>
+                                )}
                               </td>
                               <td className="py-3 pr-3">
                                 {adminUser.role !== "ADMIN" && adminUser.cpf ? (
